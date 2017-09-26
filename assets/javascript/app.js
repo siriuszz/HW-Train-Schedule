@@ -19,8 +19,8 @@ var destination = "";
 var frequency = "";
 var firstTime = "";
 
-// -------------var dateFormat = "MM/DD/YYYY";
-// -------------var convertedDate = moment(startDate, dateFormat);
+var dateFormat = "HH-mm";
+// var convertedDate = moment(startDate, dateFormat);
 
 // Capture Button Click
 $("#add-train").on("click", function(event) {
@@ -28,9 +28,9 @@ $("#add-train").on("click", function(event) {
 
     // Grabbed values from text boxes
     name = $("#input-name").val().trim();
-    role = $("#input-dest").val().trim();
-    startDate = $("#input-first").val().trim();
-    rate = $("#input-freq").val().trim();
+    destination = $("#input-dest").val().trim();
+    firstTime = $("#input-first").val().trim();
+    frequency = $("#input-freq").val().trim();
 
     // Code for handling the push
     database.ref().push({
@@ -53,10 +53,11 @@ database.ref().on("child_added", function(childSnapshot) {
     console.log(childSnapshot.val().firstTime);
 
 // full list of items to the well
-    $("#train-list").append("<div class='well'><span id='name'> " + childSnapshot.val().name +
-        " </span><span id='list-role'> " + childSnapshot.val().role +
-        " </span><span id='list-dest'> " + childSnapshot.val().date +
-        " </span><span id='list-freq'> " + childSnapshot.val().rate + " </span></div>");
+    $("#train-list").append("<div class='well'><span id='display-name'> " + childSnapshot.val().name +
+        " </span><span id='display-dest'> " + childSnapshot.val().destination +
+        " </span><span id='display-freq'> " + childSnapshot.val().frequency +
+        // " </span><span id='list-freq'> " + childSnapshot.val().frequency + "" +
+        " </span></div>");
 
     // Handle the errors
 }, function(errorObject) {
@@ -80,8 +81,8 @@ database.ref().orderByChild(dateAdded).limitToLast(3).on("child_added", function
 
     // Change the HTML to reflect
     $("#list-name").append("<div>" + snapshot.val().name + "</div>");
-    $("#list-dest").append("<div>" + snapshot.val().role + "</div>");
-    $("#list-freq").append("<div>" + snapshot.val().startDate + "</div>");
+    $("#list-dest").append("<div>" + snapshot.val().destination + "</div>");
+    $("#list-freq").append("<div>" + snapshot.val().frequency + "</div>");
 
     // Handle the errors
 }, function(errorObject) {
