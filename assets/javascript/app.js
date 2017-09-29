@@ -16,23 +16,27 @@ var database = firebase.database();
 // Initial Values
 var name = "";
 var destination = "";
-var frequency = "";
+var frequency = 0;
 var firstTime = "";
+var firstTimeConverted = "";
+var currentTime = "";
+var diffTime = "";
+var remainder = "";
+var minAway = 0;
+var nextArrival = "";
+var arrivalTime = "";
 
-var dateFormat = "HH-mm";
-// var convertedDate = moment(startDate, dateFormat);
-
-// Capture Button Click
+// On click of the Submit button for a new train
 $("#add-train").on("click", function(event) {
     event.preventDefault();
 
-    // Grabbed values from text boxes
+    // Collect values from text boxes
     name = $("#input-name").val().trim();
     destination = $("#input-dest").val().trim();
     firstTime = $("#input-first").val().trim();
     frequency = $("#input-freq").val().trim();
 
-    // Code for handling the push
+    // Push values to the db
     database.ref().push({
         name: name,
         destination: destination,
@@ -40,24 +44,10 @@ $("#add-train").on("click", function(event) {
         firstTime: firstTime,
         dateAdded: firebase.database.ServerValue.TIMESTAMP
     });
-
 });
 
-// Firebase watcher + initial loader HINT: This code behaves similarly to .on("value")
+// Firebase watcher + initial loader
 database.ref().on("child_added", function(childSnapshot) {
-
-    // Log everything that's coming out of snapshot
-    console.log(childSnapshot.val().name);
-    console.log(childSnapshot.val().destination);
-    console.log(childSnapshot.val().frequency);
-    console.log(childSnapshot.val().firstTime);
-
-// full list of items to the well
-    $("#train-list").append("<div class='well'><span id='display-name'> " + childSnapshot.val().name +
-        " </span><span id='display-dest'> " + childSnapshot.val().destination +
-        " </span><span id='display-freq'> " + childSnapshot.val().frequency +
-        // " </span><span id='list-freq'> " + childSnapshot.val().frequency + "" +
-        " </span></div>");
 
     // Handle the errors
 }, function(errorObject) {
@@ -65,26 +55,40 @@ database.ref().on("child_added", function(childSnapshot) {
 });
 
 
-// Firebase watcher + initial loader + order/limit HINT: .on("child_added"
-database.ref().orderByChild(dateAdded).limitToLast(3).on("child_added", function(snapshot) {
-    // storing the snapshot.val() in a variable for convenience
-    var sv = snapshot.val();
+// Firebase watcher + initial loader + order/limit
+database.ref().orderByChild("dateAdded").limitToLast(3).on("child_added", function(snapshot) {
 
-    // Console.loging the last user's data
-    console.log(snapshot.val().name);
-    console.log(snapshot.val().destination);
-    console.log(snapshot.val().frequency);
-    console.log(snapshot.val().firstTime);
+    // Calculations
+    firstTimeConverted = moment(snapshot.val().firstTime, "hh:mm").subtract(1, "years");
+    console.log(firstTimeConverted);
 
-    console.log(moment().diff(frequency, "minutes"));
+    currentTime = moment();
+    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+    diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    console.log("DIFF IN TIME: " + diffTime);
+
+    remainder = diffTime % snapshot.val().frequency;
+    console.log(remainder);
+
+    minAway = snapshot.val().frequency - remainder;
+    console.log("MIN UNTIL: " + minAway);
+
+    nextArrival = moment().add(minAway, "minutes");
+    console.log("ARRIVAL TIME: " + moment(nextArrival).format("hh:mm"));
+
+    arrivalTime = nextArrival.format("hh:mm");
+
+    // Change the table to reflect train data
+    $("#train-info").append("<tr><td>" + snapshot.val().name +
+        "</td><td>" + snapshot.val().destination +
+        "</td><td>" + snapshot.val().frequency +
+        "</td><td>" + arrivalTime +
+        "</td><td>" + minAway + "</td>");
 
 
-    // Change the HTML to reflect
-    $("#list-name").append("<div>" + snapshot.val().name + "</div>");
-    $("#list-dest").append("<div>" + snapshot.val().destination + "</div>");
-    $("#list-freq").append("<div>" + snapshot.val().frequency + "</div>");
 
-    // Handle the errors
+   // Handle the errors
 }, function(errorObject) {
     console.log("Errors handled: " + errorObject.code);
 });
