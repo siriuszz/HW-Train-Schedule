@@ -77,7 +77,7 @@ database.ref().orderByChild("dateAdded").limitToLast(3).on("child_added", functi
     nextArrival = moment().add(minAway, "minutes");
     console.log("ARRIVAL TIME: " + moment(nextArrival).format("hh:mm"));
 
-    arrivalTime = nextArrival.format("hh:mm");
+    arrivalTime = nextArrival.format("hh:mm A");
 
     // Change the table to reflect train data
     $("#train-info").append("<tr><td>" + snapshot.val().name +
